@@ -1,0 +1,175 @@
+@import "../templates/mixins";
+@import '../templates/colors';
+
+.navbar {
+	@include flex(center);
+	height: 120px;
+	padding: 0px 1rem;
+	gap: 1rem;
+	background: $background-2;
+	.left-navbar {
+		@include flex(center);
+		gap: 1.25rem;
+		background: $background-2;
+		.logo {
+			height: 120px;
+			padding: 1rem;
+			img {
+				height: 90px;
+			}
+		}
+		.play-btn {
+			position: relative;
+			> a, button {
+				@include gradientButton;
+				width: auto;
+				display: inline-block;
+				@include flex(center, center);
+				padding: 0.5rem;
+			}
+			.play-links {
+				@include greyButton;
+				background: $background-2;
+				border-radius: 3px;
+				position: absolute;
+				width: 200px;
+				padding: 1rem;
+				@include flex(stretch, flex-start, column);
+				z-index: 2;
+				gap: 1rem;
+				li {
+					@include gradientButton;
+					@include flex(center, center);
+				}
+			}
+		}
+	}
+	.hamburger {
+		display: none;
+	}
+	.right-navbar {
+		@include flex(center);
+		margin-left: auto;
+		gap: 1.25rem;
+		.links {
+			@include flex(center);
+			gap: 2rem;
+			li {
+				a {
+					font-weight: bold;
+					font-size: 1.125rem;
+					transition: 0.3s all;
+					color: $text;
+					border-bottom: 2px solid transparent;
+					&:hover {
+						@include gradientText;
+						border-color: $tertiary;
+					}
+				}
+			}
+			.selected-link a {
+				@include gradientText;
+				border-color: $tertiary;
+			}
+		}
+		.auth-btns {
+			@include flex;
+			gap: 0.5rem;
+			a {
+				@include pinkButton;
+				width: 100px;
+			}
+		}
+		.avatar {
+			@include flex(center);
+			gap: 0.75rem;
+			.info {
+				.username {
+					color: $secondary;
+				}
+				p {
+					margin: 0px;
+					color: $text;
+				}
+			}
+		}
+		.link-icons {
+			@include flex(center);
+			gap: 1rem;
+			position: relative;
+			li,
+			.notification-link {
+				color: $text;
+				font-size: 1.25rem;
+			}
+			.settings {
+				position: absolute;
+				left: -220%;
+				top: 160%;
+				@include greyButton;
+				background: $background-2;
+				border-radius: 3px;
+				padding: 1rem;
+				width: 175px;
+				z-index: 2;
+				@include flex(stretch, flex-start, column);
+				gap: 0.5rem;
+				li {
+					border: 2px solid $input-light;
+					padding: 0.5rem;
+					border-radius: 9999px;
+					@include flex(center, center);
+					transition: 0.3s background;
+					a {
+						color: $tertiary;
+					}
+					&:hover {
+						background: $input-dark;
+					}
+				}
+			}
+		}
+		.notification-link {
+			position: relative;
+			&:after {
+				content: "";
+				position: absolute;
+				background: $secondary;
+				width: 10px;
+				height: 10px;
+				border-radius: 50%;
+				right: -3px;
+				top: 0px;
+			}
+		}
+	}
+	@media (max-width: 768px) {
+		position: relative;
+		z-index: 2;
+		.right-navbar {
+			position: absolute;
+			background: $background-2;
+			width: 100%;
+			padding: 1rem;
+			left: 0px;
+			z-index: -1;
+			transition: 1s top;
+			@include flex(flex-start, flex-start, column);
+			.links {
+				@include flex(flex-start, flex-start, column);
+			}
+		}
+		.show {
+			top: 120px;
+		}
+		.hide {
+			top: -200%;
+		}
+		.hamburger {
+			display: block;
+			margin-left: auto;
+			font-size: 2rem;
+			color: $secondary;
+		}
+	}
+}

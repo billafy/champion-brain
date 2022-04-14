@@ -1,0 +1,49 @@
+@import '../templates/mixins';
+@import '../templates/colors';
+
+.home {
+	margin: 3rem auto;
+	.total-stats {
+		@include gradientBorder(3px);
+		margin: auto;
+		width: 400px;
+		height: 100px;
+		max-width: 95%;
+		@include flex(center, space-evenly);
+		text-align: center;
+		color: $text;
+		h4 {
+			@include greyButton;
+		}
+	}
+	.stats-container {
+		@include flex(stretch, center);
+		flex-wrap: wrap;
+		width: 1400px;
+		max-width: 95%;
+		margin: 1.5rem auto;
+		gap: 1rem;
+		.stats {
+			padding: 0.5rem;
+			@include gradientBorder(3px);
+			width: 600px;
+			max-width: 95%;
+			min-height: 200px;
+			max-height: auto;
+			text-align: center;
+			color: $text;
+			h3, h4, h5 {
+				margin: 0.5rem;
+				@include greyButton;
+				display: inline-block;
+			}
+			.results {
+				@include flex(center, space-evenly);
+				flex-wrap: wrap;
+				.result-stats {
+					@include flex(center, space-evenly);
+				}
+			}
+		}
+	}
+}

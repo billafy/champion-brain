@@ -1,0 +1,26 @@
+@import '../templates/mixins';
+@import '../templates/colors';
+
+.sidebar {
+	position: fixed;
+	bottom: 0px;
+	transition: 0.5s all;
+	@include flex(center, center);
+	.slider {
+		width: 50px;
+		@include flex(center, center);
+		button {
+			@include flex(center, center);
+			background:  $background-2;
+			border: 0px;
+			font-size: 2rem;
+			color: $text;
+			width: 100%;
+			padding: 1rem 0px;
+			border-radius: 3px;
+		}
+	}
+	.child {
+		height: calc(100vh - 120px);
+	}
+}

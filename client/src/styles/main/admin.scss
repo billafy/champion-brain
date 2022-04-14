@@ -1,0 +1,44 @@
+@import '../templates/mixins';
+@import '../templates/colors';
+
+.admin-dashboard {
+	margin: 3rem 0px;
+	h1, h2 {
+		text-align: center;
+		color: $text;
+		font-weight: normal;
+	}
+	h1 {
+		@include heading;
+		font-size: 1.75rem;
+	}
+	.all-users-container {
+		max-height: 600px;
+		width: 1200px;
+		max-width: 95%;
+		padding: 1.5rem;
+		margin: auto;
+		overflow-y: auto;
+		.all-users {
+			width: 100%;
+			@include gradientBorder(2px);
+			background:  $background-2;
+			color: $text;
+			th {
+				color: $secondary;
+			}
+			th, td {
+				padding: 0.75rem 0.5rem;
+				text-align: left;
+				border: 1px solid $text;
+				.make-admin-btn {
+					@include greyButton;
+					margin: 0.25rem 0.5rem;
+					border: 0px;
+					font-size: 0.7rem;
+					padding: 0.25rem 0.4rem;
+				}
+			}
+		}
+	}
+}

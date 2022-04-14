@@ -1,0 +1,123 @@
+@import '../templates/mixins';
+@import '../templates/colors';
+
+.two-player {
+	margin: 3rem auto;
+	.player {
+		@include flex(center, flex-start, column);
+		.profile-picture {
+			width: 50px;
+			height: 50px;
+		}
+		h4 {
+			color: $text;
+		}
+		.my-username {
+			color: $secondary;
+			&::after {
+				content: '(You)';
+				margin-left: 0.5rem;
+			}
+		}
+	}
+	.top-container {
+		@include flex(center, space-evenly, column);
+		width: 1000px;
+		max-width: 95%;
+		margin: 1.5rem auto;
+		.game-winner {
+			text-align: center;
+			color: $text;
+			span {
+				color: $tertiary;
+			}
+		}
+	}
+	.game-input, .guess-input {
+		@include flex(center, flex-start);
+		gap: 0.25rem;
+		input[type='number'] {
+			@include greyButton;
+			border: 0px;
+			border-radius: 3px;
+			height: 35px;
+			width: 80px;
+			max-width: 95%;
+		}
+		input[type='button'], input[type='submit'] {
+			@include gradientButton;
+			width: 80px;
+		}
+		.my-number {
+			text-align: center;
+			color: $text;
+			h2 {
+				color: $secondary;
+			}
+		}
+	}
+	.game-input {
+		flex-direction: column;
+		p {
+			color: $tertiary;
+		}
+	}
+	.game-screen {
+		width: 1000px;
+		max-width: 95%;
+		margin: 1.5rem auto;
+		@include gradientBorder(3px);
+		@include flex(flex-start, flex-start, column);
+		padding: 1.25rem;
+		height: 500px;
+		overflow-y: auto;
+		.game-players {
+			@include flex(flex-start, space-between);
+			gap: 1.5rem;
+			width: 100%;
+		}
+		.game-loading {
+			margin: auto;
+			p {
+				color: $text;
+			}
+		}
+		.guesses {
+			@include flex(flex-start, flex-start, column-reverse);
+			gap: 0.25rem;
+			margin-top: 0.75rem;
+			.guess {
+				border: 1px solid $tertiary;
+				padding: 0.5rem 0.5rem;
+				@include flex(center);
+				gap: 0.5rem;
+				h4 {
+					margin: 0px;
+					color: $tertiary;
+				}
+				p {
+					margin: 0px;
+					color: $text;
+					span {
+						background: $tertiary;
+						padding: 0.25rem;
+						width: 30px;
+						color: $background-1;
+					}
+				}
+			}
+		}
+	}
+	.leave-room {
+		text-align: center;
+		input {
+			@include gradientButton;
+		}
+	}
+	@media (max-width: 568px) {
+		.top-container {
+			@include flex(center, center, column);
+			gap: 1.5rem;
+		}
+	}
+}
