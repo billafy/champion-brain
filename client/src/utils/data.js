@@ -80,28 +80,22 @@ export const help = [
 		title: "How to play?",
 		nested: false,
 		text: `
-Imagine or dream any number.
-Then write any number you imagine.
-Compare 2 numbers and Find the same digit and its position
-When there are same digit, make counter according to coincidence and sequence digit.
+Set a number of your choice.
+Wait for the opponent to select their number.
+Guess the opponent's number and opponent will do the same other way around.
+The game engine will compare the original number and the guessed number and counter it.
 For example.
 
-When rival dream and write number “123”, player tell rival guessing number like 356.
-In this case, rival inform to player like this: N1.
-It’s the reason why there is number 3, but position is not correct.
+If opponent's number is 123 and player guesses 356.
+In this case, the game engine will inform the player : Y0 N1.
+Here, 3 exists in the original number but it's position is incorrect.
+Hence, N is 1.
 
-In the next turn, player tell rival guessing number again like 528, then rival tell player like this: Y1
-Because there is number 2 and correct position.
-and if player tell rival 325, then rival tell player: Y1, N1
-Like this, player have to guess your number “123” with rival’s answers.
+Now player guesses 528.
+Game engine will inform : Y1 N0.
+As 2 is in the correct position, Y is sent as 1.
 
-That being said: 
-356 : N1
-528 : Y1
-325 : Y1,N1
-
-Calling the number, player should guess the other player’s number quickly and sensitively.
-The fasted player get winner in each board.
+The player who guesses the number first, wins.
 		`,
 	},
 	{
@@ -185,8 +179,8 @@ When the player wins in each game, the player gets the score.
 
 2-players game : 
 3x room : 1 score
-4x room : 5 score
-5x room : 10 score
+4x room : 2 score
+5x room : 3 score
 
 Challenge game :
 3x room : 3 score
@@ -197,3 +191,5 @@ Challenge game :
 		`,
 	},
 ];
+
+export const chatBoxRoutes = ['/rooms', '/twoPlayer/3', '/twoPlayer/4', '/twoPlayer/5'];

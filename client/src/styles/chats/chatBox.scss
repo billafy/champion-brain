@@ -2,14 +2,16 @@
 @import '../templates/colors';
 
 .chat-box {
-	width: 300px;
+	width: 350px;
 	height: calc(100vh - 120px);
-	background: $background-3;
+	margin: 0.5rem;
+	border-radius: 5px;
+	background: $background-2;
 	display: grid;
 	grid-template-rows: 50px auto 110px;
 	.chat-name {
 		@include flex(center);
-		border-bottom: 2px solid $button;
+		border-bottom: 2px solid $border;
 		padding: 0.5rem;
 		color: $text;
 		font-size: 0.9rem;
@@ -19,11 +21,14 @@
 		padding: 0.5rem;
 		gap: 0.5rem;
 		overflow-y: auto;
+		.profile-picture {
+			min-width: 40px;
+		}
 		.message {
 			@include flex;
 			gap: 0.5rem;
 			.text {
-				background: $button;
+				background: $background-1;
 				padding: 0.5rem;
 				border-radius: 3px;
 				color: $text;
@@ -46,7 +51,7 @@
 		}
 	}
 	.send-message {
-		background: $button;
+		background: $background-1;
 		margin: 0.5rem;
 		padding: 0.5rem;
 		width: calc(100% - 1rem);
@@ -70,7 +75,7 @@
 					&,
 					> *,
 					input {
-						background: $button;
+						background: $border;
 						border: 0px;
 						color: $text;
 						::before {
@@ -92,6 +97,9 @@
 			border: 0px;
 			color: $text;
 		}
+	}
+	::-webkit-scrollbar {
+		width: 15px;
 	}
 }
 .chat-box-not-logged-in {

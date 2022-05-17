@@ -83,16 +83,19 @@ button {
 	top: -300px;
 }
 .profile-picture {
-	width: 30px;
-	height: 30px;
-	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	border-radius: 3px;
 	overflow: hidden;
 	object-fit: cover;
 }
+.main-container {
+	@include flex(flex-start, center);
+}
 .flag {
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
+	width: 25px;
+	height: 25px;
+	border-radius: 5px;
 	vertical-align: middle;
 	margin: 0.25rem;
 }

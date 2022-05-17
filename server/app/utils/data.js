@@ -242,4 +242,6 @@ const countries = [
 	"Zimbabwe",
 ];
 
-module.exports = {countries};
+const roomTypes = [3, 4, 5];
+
+module.exports = {roomTypes, countries};

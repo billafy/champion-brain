@@ -7,6 +7,7 @@
 	padding: 0px 1rem;
 	gap: 1rem;
 	background: $background-2;
+	margin: 0px 0.25rem 0.25rem 0.25rem;
 	.left-navbar {
 		@include flex(center);
 		gap: 1.25rem;
@@ -18,31 +19,7 @@
 				height: 90px;
 			}
 		}
-		.play-btn {
-			position: relative;
-			> a, button {
-				@include gradientButton;
-				width: auto;
-				display: inline-block;
-				@include flex(center, center);
-				padding: 0.5rem;
-			}
-			.play-links {
-				@include greyButton;
-				background: $background-2;
-				border-radius: 3px;
-				position: absolute;
-				width: 200px;
-				padding: 1rem;
-				@include flex(stretch, flex-start, column);
-				z-index: 2;
-				gap: 1rem;
-				li {
-					@include gradientButton;
-					@include flex(center, center);
-				}
-			}
-		}
+		
 	}
 	.hamburger {
 		display: none;
@@ -62,14 +39,14 @@
 					color: $text;
 					border-bottom: 2px solid transparent;
 					&:hover {
-						@include gradientText;
 						border-color: $tertiary;
+						color: $tertiary;
 					}
 				}
 			}
 			.selected-link a {
-				@include gradientText;
 				border-color: $tertiary;
+				color: $tertiary;
 			}
 		}
 		.auth-btns {
@@ -83,11 +60,48 @@
 		.avatar {
 			@include flex(center);
 			gap: 0.75rem;
+			.upload-profile-picture {
+				position: relative;
+				input {
+					color: white;
+					position: absolute;
+					top: 0px;
+					height: 30px;
+					width: 30px;
+					left: 0px;
+					opacity: 0;
+					z-index: 1;
+				}
+			}
 			.info {
-				.username {
-					color: $secondary;
+				position: relative;
+				.update-username {
+					@include flex(center, center);
+					position: absolute;
+					z-index: 3;
+					top: -15px;
+					left: -30px;
+					border: 2px solid $border;
+					box-shadow: 0px 5px 10px black;
+					border-radius: 5px;
+					overflow: hidden;
+					input, button {
+						height: 35px;
+						background: $background-1;
+						border: 0px;
+					}
+					input {
+						padding: 0px 0.5rem;
+						color: $text;
+					}
+					button {
+						@include flex(center, center);
+						font-size: 1.25rem;
+						color: $tertiary;
+					}
 				}
 				p {
+					cursor: pointer;
 					margin: 0px;
 					color: $text;
 				}
@@ -99,20 +113,23 @@
 			position: relative;
 			li,
 			.notification-link {
+				@include flex(center);
+				padding-left: 0.75rem;
+				height: 40px;
 				color: $text;
 				font-size: 1.25rem;
 			}
 			.settings {
-				position: absolute;
-				left: -220%;
-				top: 160%;
+				@include flex(stretch, flex-start, column);
 				@include greyButton;
+				position: absolute;
+				left: -100%;
+				top: 160%;
 				background: $background-2;
-				border-radius: 3px;
+				border-radius: 5px;
 				padding: 1rem;
 				width: 175px;
 				z-index: 2;
-				@include flex(stretch, flex-start, column);
 				gap: 0.5rem;
 				li {
 					border: 2px solid $input-light;
@@ -139,7 +156,7 @@
 				height: 10px;
 				border-radius: 50%;
 				right: -3px;
-				top: 0px;
+				top: 5px;
 			}
 		}
 	}

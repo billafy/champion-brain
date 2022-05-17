@@ -33,7 +33,7 @@
 					border-color: $input-light;
 				}
 			}
-			input[type="button"] {
+			input[type="submit"] {
 				@include gradientButton;
 				width: 100px;
 			}
@@ -64,7 +64,7 @@
 				}
 				.country {
 					&:hover {
-						background: $button;
+						background: $border;
 					}
 				}
 			}

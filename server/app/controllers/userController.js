@@ -1,6 +1,10 @@
 const { User } = require("../schema/models");
 const { imageKit, deleteMedia } = require("../utils/mediaStorage");
 const { readFileSync } = require("fs");
+const {
+	validateUsername,
+} = require("../utils/validators");
+const {getUser} = require('../utils/utils');
 
 const uploadProfilePicture = async (req, res) => {
 	const {
@@ -42,13 +46,31 @@ const uploadProfilePicture = async (req, res) => {
 };
 
 const getAllUsers = async (req, res) => {
-	let users = await User.find({}, { _id: 1, password: 0 }).sort({score: -1});
+	const {limit} = req.query;
+	let users;
+	if(limit && !isNaN(limit) && limit > 0) 
+		users = await User.find({}, { _id: 1, password: 0 }).sort({score: -1}).limit(Number(limit));
+	else 
+		users = await User.find({}, { _id: 1, password: 0 }).sort({score: -1});
 	for(let i = 0; i < users.length; ++i) 
 		users[i].rank = i + 1;
 	return res.json({
 		success: true,
-		body: { message: `${users.length} user(s) fetched`, users },
+		body: { message: `${users.length} user(s) fetched`, users, userCount: await User.countDocuments({}) },
 	});
+};
+
+const updateUser = async (req, res) => {
+	const {params: {_id}, body: {username}} = req;
+	if(!await validateUsername(res, username)) 
+		return;
+	let user = await User.findById(_id);
+	if(!user) 
+		return res.json({success: false, body: {message: `User with ID ${_id} does not exists`}});
+	user.username = username;
+	await user.save();
+	user = await getUser(_id);
+	res.json({success: true, body: {message: 'User updated', user}});
 };
 
 const makeAdmin = async (req, res) => {
@@ -65,5 +87,6 @@ const makeAdmin = async (req, res) => {
 module.exports = {
 	uploadProfilePicture,
 	getAllUsers,
-	makeAdmin,
+	updateUser,
+	makeAdmin
 };

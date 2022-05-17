@@ -5,6 +5,7 @@ import urls from "../../utils/urls";
 import "../../styles/main/admin.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { updateAlert } from "../../reducers/mainSlice";
+import {getProfilePicture} from '../../utils/utils';
 
 const Admin = () => {
 	const { user } = useSelector((state) => state.main);
@@ -54,21 +55,27 @@ const Admin = () => {
 				<table className="all-users">
 					<thead>
 						<tr>
-							<th>ID</th>
+							<th></th>
 							<th>Username</th>
 							<th>Email</th>
 							<th>Country</th>
 							<th>Is Admin</th>
+							<th>3x</th>
+							<th>4x</th>
+							<th>5x</th>
 							<th>Score</th>
 							<th>Ranking</th>
 						</tr>
 					</thead>
 					<tbody>
-						{users.map((_user) => {
+						{users.map((_user, i) => {
 							return (
 								<tr key={_user._id}>
-									<td>{_user._id}</td>
-									<td>{_user.username}</td>
+									<td>{i + 1}</td>
+									<td>
+										<img src={getProfilePicture(_user.profilePicture)} alt='Avatar' className='profile-picture'/>
+										{_user.username}
+									</td>
 									<td>{_user.email}</td>
 									<td>
 										<img
@@ -93,6 +100,9 @@ const Admin = () => {
 											/>
 										)}
 									</td>
+									<td>{_user.stats.two_player[3][0]} / {_user.stats.two_player[3][1]}</td>
+									<td>{_user.stats.two_player[4][0]} / {_user.stats.two_player[4][1]}</td>
+									<td>{_user.stats.two_player[5][0]} / {_user.stats.two_player[5][1]}</td>
 									<td>{_user.score}</td>
 									<td>{_user.rank}</td>
 								</tr>

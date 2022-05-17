@@ -18,7 +18,7 @@ const signup = async (req, res) => {
 	if (
 		!(await userExists(res, email)) ||
 		!validateEmail(res, email) ||
-		!validateUsername(res, username) ||
+		!await validateUsername(res, username) ||
 		!validatePassword(res, password, confirmPassword) ||
 		!validateCountry(res, country)
 	)

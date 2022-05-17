@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useLayoutEffect, useState, useEffect } from "react";
 import {
-	BrowserRouter as Router,
 	Routes,
 	Route,
 	Navigate,
+	useLocation
 } from "react-router-dom";
 import Navbar from "./components/main/Navbar";
 import Home from "./components/main/Home";
@@ -14,7 +14,6 @@ import Rooms from "./components/game/Rooms";
 import TwoPlayer from "./components/game/TwoPlayer";
 import Help from "./components/main/Help";
 import Admin from "./components/main/Admin";
-import MyProfile from "./components/main/MyProfile";
 import ProtectedRoute from "./components/router/ProtectedRoute";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, login, resetAlert, updateAlert } from "./reducers/mainSlice";
@@ -22,10 +21,13 @@ import { updateRooms, updateRoom } from "./reducers/gameSlice";
 import axios from "axios";
 import urls from "./utils/urls";
 import { socket } from "./store";
+import {chatBoxRoutes} from './utils/data';
 
 const App = () => {
 	const dispatch = useDispatch();
 	const { isLoggedIn, alert } = useSelector((state) => state.main);
+	const [showChatBox, setShowChatBox] = useState(false);
+	const location = useLocation();
 
 	const refresh = async () => {
 		try {
@@ -42,10 +44,8 @@ const App = () => {
 		refresh();
 		socket.on("room-data", (roomData) => {
 			dispatch(updateRoom(roomData));
-			console.log(roomData.user);
 			if(roomData.winner) 
 				dispatch(updateUser(roomData.user))
-			// console.log(roomData);
 		});
 		socket.on("room-list", (roomList) => {
 			const _rooms = {};
@@ -67,66 +67,63 @@ const App = () => {
 			}, 5000);
 	}, [alert, dispatch]);
 
+	useLayoutEffect(() => {
+		if(chatBoxRoutes.includes(location.pathname)) 
+			setShowChatBox(true);
+		else 
+			setShowChatBox(false);
+	}, [location]);
+
 	return (
 		<section>
-			<Router>
-				<p className={`alert ${alert ? "show-alert" : "hide-alert"}`}>
-					{alert}
-				</p>
-				<Navbar />
-				<main>
-					<Routes>
-						<Route
-							path="/signup"
-							element={
-								isLoggedIn ? <Navigate to="/" /> : <Signup />
-							}
-						/>
-						<Route
-							path="/login"
-							element={
-								isLoggedIn ? <Navigate to="/" /> : <Login />
-							}
-						/>
-						<Route path="/rooms" element={<Rooms />} />
-						<Route
-							path="/twoPlayer/:roomType"
-							element={
-								<ProtectedRoute path="/login">
-									<TwoPlayer />
-								</ProtectedRoute>
-							}
-						/>
-						<Route path="/help" element={<Help />} />
-						<Route
-							path="/admin"
-							element={
-								<ProtectedRoute path="/rooms">
-									<Admin />
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							path="/myProfile"
-							element={
-								<ProtectedRoute path="/rooms">
-									<MyProfile />
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							exact
-							path="/"
-							element={
-								<ProtectedRoute path="/rooms">
-									<Home />
-								</ProtectedRoute>
-							}
-						/>
-					</Routes>
-				</main>
-				<ChatBox />
-			</Router>
+			<p className={`alert ${alert ? "show-alert" : "hide-alert"}`}>
+				{alert}
+			</p>
+			<Navbar />
+			<main className='main-container'>
+				<Routes>
+					<Route
+						path="/signup"
+						element={
+							isLoggedIn ? <Navigate to="/" /> : <Signup />
+						}
+					/>
+					<Route
+						path="/login"
+						element={
+							isLoggedIn ? <Navigate to="/" /> : <Login />
+						}
+					/>
+					<Route path="/rooms" element={<Rooms />} />
+					<Route
+						path="/twoPlayer/:roomType"
+						element={
+							<ProtectedRoute path="/login">
+								<TwoPlayer />
+							</ProtectedRoute>
+						}
+					/>
+					<Route path="/help" element={<Help />} />
+					<Route
+						path="/admin"
+						element={
+							<ProtectedRoute path="/rooms">
+								<Admin />
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						exact
+						path="/"
+						element={
+							<ProtectedRoute path="/rooms">
+								<Home />
+							</ProtectedRoute>
+						}
+					/>
+				</Routes>
+				{showChatBox && <ChatBox />}
+			</main>
 		</section>
 	);
 };

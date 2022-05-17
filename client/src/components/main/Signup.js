@@ -17,7 +17,8 @@ const Signup = () => {
 	const [countries, setCountries] = useState(countriesJson);
 	const dispatch = useDispatch();
 
-	const signup = async () => {
+	const signup = async (event) => {
+		event.preventDefault();
 		if (!email || !username || !password || !confirmPassword || !country) {
 			dispatch(updateAlert("Fill all the fields"));
 			return;
@@ -125,7 +126,7 @@ const Signup = () => {
 					)}
 				</div>
 				<div className="form-field">
-					<input type="button" value="Sign Up" onClick={signup} />
+					<input type="submit" value="Sign Up" onClick={signup} />
 				</div>
 				<div className="form-field">
 					<Link to="/login">

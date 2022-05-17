@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useLayoutEffect, useRef, useEffect, useState } from "react";
 import Picker from "emoji-picker-react";
 import { FaSmile } from "react-icons/fa";
 import { MdUpload, MdSend } from "react-icons/md";
@@ -37,7 +37,7 @@ const ChatBox = () => {
 		if (response.data.success) setConversation(response.data.body.messages);
 	};
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		if (conversationRef.current)
 			conversationRef.current.scrollTop =
 				conversationRef.current.scrollHeight -
@@ -52,7 +52,7 @@ const ChatBox = () => {
 	}, []);
 
 	return (
-		<Sidebar position={"right"} width={300}>
+		<Sidebar position={"right"} width={350}>
 			<div className={`chat-box ${isLoggedIn ? '' : 'chat-box-not-logged-in'}`}>
 				<div className="chat-name">
 					<p>Global Chat</p>
@@ -62,11 +62,11 @@ const ChatBox = () => {
 						return (
 							<div
 								className={`message ${
-									user._id === message.from?._id
+									user?._id === message?.from?._id
 										? "sent"
 										: "received"
 								}`}
-								key={message._id}
+								key={message?._id}
 							>
 								<img
 									src={getProfilePicture(

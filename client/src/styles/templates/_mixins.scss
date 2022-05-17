@@ -52,6 +52,23 @@
 	}
 }
 
+@mixin blueButton {
+	@include flex(center, center);
+	background: $primary;
+	border-radius: 3px;
+	border: 3px solid transparent;
+	color: $text;
+	font-weight: bold;
+	text-transform: uppercase;
+	padding: 0px 1rem;
+	height: 40px;
+	width: auto;
+	&:hover {
+		background: transparent;
+		border-color: $primary;
+	}
+}
+
 @mixin pinkButton {
 	@include flex(center, center);
 	border-radius: 9999px;
@@ -68,15 +85,11 @@
 }
 
 @mixin greyButton {
-	background: $button;
+	background: $border;
 	color: $text;
 	padding: 0.25rem 1.25rem;
 	border-radius: 9999px;
-	box-shadow: 0px 0px 6px $primary;
 	transition: 0.3s box-shadow;
-	&:hover {
-		box-shadow: 0px 0px 8px $primary;
-	}
 }
 
 @mixin heading {

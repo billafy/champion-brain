@@ -59,7 +59,7 @@ const validatePassword = (res, password, confirmPassword) => {
 	return true;
 };
 
-const validateUsername = (res, username) => {
+const validateUsername = async (res, username) => {
 	if (username.length < 6) {
 		res.json({
 			success: false,
@@ -67,6 +67,10 @@ const validateUsername = (res, username) => {
 				message: "Username should contain atleast 6 characters",
 			},
 		});
+		return false;
+	}
+	else if(await User.countDocuments({username})) {
+		res.json({success: false, body: {message: 'Username already exists'}});
 		return false;
 	}
 	return true;

@@ -11,7 +11,8 @@ const Login = () => {
 	const [password, setPassword] = useState("");
 	const dispatch = useDispatch();
 
-	const handleLogin = async () => {
+	const handleLogin = async (event) => {
+		event.preventDefault();
 		if (!username || !password)
 			return dispatch(updateAlert("Fill all the fields"));
 		const response = await axios.post(
@@ -43,7 +44,7 @@ const Login = () => {
 					/>
 				</div>
 				<div className="form-field">
-					<input type="button" value="Login" onClick={handleLogin} />
+					<input type="submit" value="Login" onClick={handleLogin} />
 				</div>
 				<div className="form-field">
 					<Link to="/signup">

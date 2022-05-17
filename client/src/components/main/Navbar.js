@@ -1,33 +1,71 @@
-import { Fragment, useEffect } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { FaBell } from "react-icons/fa";
 import { MdSettings } from "react-icons/md";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useLocation, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
-import { links, playNowLinks, settingLinks } from "../../utils/data";
+import { links, settingLinks } from "../../utils/data";
 import {
 	showDropDown,
 	hideDropDown,
-	showPlayLinks,
-	hidePlayLinks,
 	showSettings,
 	hideSettings,
 	resetNavbar,
 } from "../../reducers/navbarSlice";
-import { logout } from "../../reducers/mainSlice";
+import { updateAlert, updateUser, logout } from "../../reducers/mainSlice";
 import "../../styles/main/navbar.scss";
 import urls from "../../utils/urls";
 import { getProfilePicture } from "../../utils/utils";
+import {TiTick} from 'react-icons/ti';
 
 const Navbar = () => {
 	const dispatch = useDispatch();
 	const { pathname } = useLocation();
 	const {
-		navbar: { dropDown, playLinks, settings },
+		navbar: { dropDown, settings },
 		main: { user, isLoggedIn },
-		game: { room },
 	} = useSelector((state) => state);
+	const [showUsernameInput, setShowUsernameInput] = useState(false);
+	const [usernameInput, setUsernameInput] = useState("");
+
+	const initUpdateUsername = () => {
+		setUsernameInput(user?.username || '');
+		setShowUsernameInput(true);
+	};
+
+	const updateUsername = async (event) => {
+		if(usernameInput !== user?.username) {
+			const response = await axios.put(
+				`${urls.updateUser}/${user._id}`,
+				{ username: usernameInput },
+				{ withCredentials: true }
+			);
+			if (response.data.success)
+				dispatch(updateUser(response.data.body.user));
+			else 
+				dispatch(updateAlert(response.data.body.message));
+		}
+		setShowUsernameInput(false);
+	};
+
+	const uploadProfilePicture = async (event) => {
+		const profilePicture = event.target.files[0];
+		if (profilePicture && profilePicture.type.startsWith("image/")) {
+			const formData = new FormData();
+			formData.append("profilePicture", profilePicture);
+			const response = await fetch(
+				`${urls.uploadProfilePicture}/${user._id}`,
+				{
+					method: "PUT",
+					body: formData,
+					credentials: "include",
+				}
+			);
+			const data = await response.json();
+			if (data.success) dispatch(updateUser(data.body.user));
+		}
+	};
 
 	const handleLogout = async () => {
 		try {
@@ -52,43 +90,6 @@ const Navbar = () => {
 						<img src="/images/newlogo.png" alt="Logo" />
 					</Link>
 				</div>
-				<div className="play-btn">
-					{room && !room.gameOver ? (
-						<Link to={`/twoPlayer/${room.roomType}`}>
-							Go To Room
-						</Link>
-					) : (
-						<>
-							<button
-								onClick={() =>
-									dispatch(
-										playLinks
-											? hidePlayLinks()
-											: showPlayLinks()
-									)
-								}
-							>
-								Play Now
-							</button>
-							{playLinks && (
-								<ul
-									className="play-links"
-									onMouseLeave={() =>
-										dispatch(hidePlayLinks())
-									}
-								>
-									{playNowLinks.map((playLink) => (
-										<li key={playLink.title}>
-											<Link to={playLink.to}>
-												{playLink.title}
-											</Link>
-										</li>
-									))}
-								</ul>
-							)}
-						</>
-					)}
-				</div>
 			</div>
 			<div className="hamburger">
 				<GiHamburgerMenu
@@ -101,7 +102,8 @@ const Navbar = () => {
 				{isLoggedIn ? (
 					<ul className="links">
 						{links.map((link) => {
-							if (link.admin && !user?.isAdmin) return <Fragment key={link.title}/>;
+							if (link.admin && !user?.isAdmin)
+								return <Fragment key={link.title} />;
 							return (
 								<li
 									key={link.title}
@@ -124,15 +126,40 @@ const Navbar = () => {
 				)}
 				{isLoggedIn && (
 					<div className="avatar">
-						<img
-							src={getProfilePicture(user?.profilePicture)}
-							alt="Avatar"
-							className="profile-picture"
-						/>
+						<div className="upload-profile-picture">
+							<img
+								src={getProfilePicture(user?.profilePicture)}
+								alt="Profile"
+								className="profile-picture"
+							/>
+							<input
+								type="file"
+								accept="image/*"
+								onChange={uploadProfilePicture}
+							/>
+						</div>
 						<div className="info">
-							<Link to="/myProfile" className="username">
-								{user?.username}
-							</Link>
+							{showUsernameInput ? (
+								<div className="update-username">	
+									<input
+										type="text"
+										value={usernameInput}
+										onChange={({ target: { value } }) =>
+											setUsernameInput(value)
+										}
+									/>
+									<button onClick={updateUsername}>
+										<TiTick/>
+									</button>
+								</div>
+							) : (
+								<p
+									onClick={initUpdateUsername}
+									className="username"
+								>
+									{user?.username}
+								</p>
+							)}
 							<p className="ticket">Ticket - xxx</p>
 						</div>
 					</div>

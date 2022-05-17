@@ -1,3 +1,4 @@
+const nodemailer = require("nodemailer");
 const { User } = require("../schema/models");
 
 const updateStats = async (room, winnerUserId) => {
@@ -14,8 +15,8 @@ const updateStats = async (room, winnerUserId) => {
 				else if (room.roomType === 5) user.score += 20;
 			} else if (room.gameMode === "two_player") {
 				if (room.roomType === 3) user.score += 1;
-				else if (room.roomType === 4) user.score += 5;
-				else if (room.roomType === 5) user.score += 10;
+				else if (room.roomType === 4) user.score += 2;
+				else if (room.roomType === 5) user.score += 3;
 			}
 		}
 		if (room.gameMode === "five_player")
@@ -76,9 +77,29 @@ const getGuessScore = (number, guess, roomType) => {
 	return { y, n };
 };
 
+const logErrorMessage = async (functionName, err) => {
+	const transporter = nodemailer.createTransport({
+	    host: 'smtp.ethereal.email',
+	    port: 587,
+	    auth: {
+	        user: 'antone.schneider32@ethereal.email',
+	        pass: 'wmuPqqjXuEPgZTEBmp'
+	    }
+	});
+
+	let info = await transporter.sendMail({
+		from: 'antone.schneider32@ethereal.email',
+		to: "antone.schneider32@ethereal.email",
+		subject: functionName,
+		text: `${err}`,
+		html: `<pre>${err}</pre>`,
+	});
+};
+
 module.exports = {
 	getUser,
 	updateStats,
 	currentDateTimestamp,
 	getGuessScore,
+	logErrorMessage,
 };

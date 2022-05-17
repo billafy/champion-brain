@@ -10,6 +10,7 @@ const urls = {
 	uploadProfilePicture: `${URL}/user/uploadProfilePicture`,
 	getGlobalMessages: `${URL}/message/getGlobalMessages`,
 	makeAdmin: `${URL}/user/makeAdmin`,
+	updateUser: `${URL}/user/updateUser`,
 };
 
 export default urls;

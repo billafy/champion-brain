@@ -1,12 +1,20 @@
 const cookie = require("cookie");
 const { verifySocket } = require("../utils/auth");
-const { Message } = require("../schema/models");
-const { v4 } = require("uuid");
 const { User } = require("../schema/models");
-const { getUser, updateStats, getGuessScore } = require("../utils/utils");
+const { sendGlobalMessage } = require("./chatSocket");
+const {
+	createRoom,
+	joinRoom,
+	getRooms,
+	leaveRoom,
+	viewRoom,
+} = require("./gameJoinSocket");
+const { setNumber, makeGuess } = require("./gamePlaySocket");
+const { roomTypes } = require("../utils/data");
+const { logErrorMessage, getUser, updateStats } = require("../utils/utils");
 
-const socketUsers = {};
-const roomTypes = [3, 4, 5];
+const socketUsers = {}; /* stores every connected socket mapped to the user */
+/* rooms mapped with the format : rooms[roomType][roomId] */
 const rooms = {
 	3: {},
 	4: {},
@@ -15,6 +23,8 @@ const rooms = {
 
 const socketConnection = (io) => {
 	io.on("connection", async (socket) => {
+		/* on connection to the socket, validate the user by the access token */
+		/* and then add to the socket mapping */
 		const accessToken = cookie.parse(
 			socket.handshake.headers.cookie || ""
 		).accessToken;
@@ -28,217 +38,152 @@ const socketConnection = (io) => {
 			};
 		}
 
-		socket.on("global-message", async (text) => {
-			if (socketUsers[socket.id]) {
-				let message = new Message({
-					from: socketUsers[socket.id].user._id,
-					private: false,
-					dateTime: new Date(),
-					text,
-				});
-				message = await message.save();
-				const _message = await Message.findById(message._id).populate(
-					"from"
-				);
-				io.emit("global-message", _message);
-			}
-		});
-
-		socket.on("create-room", async (roomType) => {
-			if (socketUsers[socket.id]) {
-				roomType = Number(roomType);
-				if (!roomTypes.includes(roomType)) {
-					socket.emit("room-error", "Invalid room type");
-				} else if (socketUsers[socket.id].inARoom) {
-					return;
-				} else {
-					const roomId = v4();
-					const room = {
-						id: roomId,
-						owner: socketUsers[socket.id],
-						players: [socketUsers[socket.id]],
-						gameStarted: false,
-						gameOver: false,
-						winner: null,
-						playerCount: 2,
-						gameMode: 'two_player',
-						roomType: roomType,
-						numbers: [null],
-						guesses: [[]],
-						numberCount: 0,
-					};
-					socketUsers[socket.id].inARoom = true;
-					rooms[roomType][roomId] = room;
-					socket.emit("room-data", room);
-					io.emit("room-list", rooms);
-				}
-			}
-		});
-
-		socket.on("join-room", async ({ roomId, roomType }) => {
-			if (
-				socketUsers[socket.id] &&
-				!socketUsers[socket.id].inARoom &&
-				roomId &&
-				roomType
-			) {
-				const room = rooms[roomType][roomId];
-				if (!room || room.gameOver || room.gameStarted)
-					socket.emit(
-						"room-error",
-						"Invalid room ID or the room is already full"
-					);
-				else if(room.owner.user._id === socketUsers[socket.id].user._id) 
-					socket.emit('room-error', 'Cannot join your own room')
-				else {
-					rooms[roomType][roomId] = {
-						...room,
-						players: [...room.players, socketUsers[socket.id]],
-						numbers: [...room.numbers, null],
-						gameStarted:
-							room.players.length + 1 === room.playerCount
-								? true
-								: false,
-						guesses: [...room.guesses, []],
-					};
-					socketUsers[socket.id].inARoom = true;
-					socket.emit("room-joined", roomType);
-					for (
-						let i = 0;
-						i < rooms[roomType][roomId].players.length;
-						++i
-					)
-						io.to(rooms[roomType][roomId].players[i].socketId).emit(
-							"room-data",
-							rooms[roomType][roomId]
-						);
-					io.emit('room-list', rooms);
-				}
-			}
-		});
-
-		socket.on("get-rooms", async () => {
-			if (socketUsers[socket.id]) socket.emit("room-list", rooms);
-		});
-
-		socket.on("set-number", ({ number, roomType, roomId }) => {
-			if (!roomType || !roomId) return;
-			const room = rooms[roomType][roomId];
-			if (isNaN(number) || String(number).length !== room.roomType)
-				socket.emit('room-error', `Enter a ${room.roomType} digit number`);
-			else if(new Set(String(number)).size < String(number).length) 
-				socket.emit('room-error', 'A digit should not be repeated');
-			else if(String(number)[0] === '0') 
-				socket.emit('room-error', 'Number cannot begin with a zero');
-			else if (room && room.players.length === room.playerCount) {
-				for (let i = 0; i < room.playerCount; ++i) {
-					if (
-						socket.id === room.players[i].socketId &&
-						room.numbers[i] === null
-					) {
-						++rooms[roomType][roomId].numberCount;
-						rooms[roomType][roomId].numbers[i] = Number(number);
-						break;
-					}
-				}
-				for (let i = 0; i < room.playerCount; ++i)
-					io.to(room.players[i].socketId).emit("room-data", {
-						...rooms[roomType][roomId],
-						numbers: null,
-						number: rooms[roomType][roomId].numbers[i],
-					});
-			}
-		});
-
-		socket.on("make-guess", async ({ guess, roomType, roomId }) => {
-			const room = rooms[roomType][roomId];
-			if (isNaN(guess) || String(guess).length !== room.roomType) 
-				socket.emit('room-error', `Enter a ${room.roomType} digit number`);
-			else if(String(guess)[0] === '0') 
-				socket.emit('room-error', 'Number cannot begin with a zero');
-			else if (room && !room.gameOver) {
-				let playerIndex;
-				for (let i = 0; i < room.playerCount; ++i) {
-					if (socket.id === room.players[i].socketId) {
-						playerIndex = i;
-						break;
-					}
-				}
-				for (let i = 0; i < room.playerCount; ++i) {
-					if (socket.id !== room.players[i].socketId) {
-						const guessScore = getGuessScore(
-							room.numbers[i],
-							guess,
-							roomType
-						);
-						if (guessScore.y === room.roomType) {
-							rooms[roomType][roomId].gameOver = true;
-							rooms[roomType][roomId].winner = 
-								socketUsers[socket.id];
-							io.emit('room-list', rooms);
-							for (let player of rooms[roomType][roomId].players) {
-								if(socketUsers[player.socketId]) 
-									socketUsers[player.socketId].inARoom = false;
+		socket.on("disconnect", async () => {
+			try {
+				/* going through all rooms */
+				for (let roomType of roomTypes) {
+					for (let room of Object.values(rooms[roomType])) {
+						/* checking if a player has left or a viewer */
+						let playerLeft = false;
+						for (let player of room.players) {
+							if (
+								player.user._id.toString() ===
+								socketUsers[socket.id]?.user._id.toString()
+							) {
+								playerLeft = true;
+								break;
 							}
-							await updateStats(room, socketUsers[socket.id]?.user._id);
 						}
-						rooms[roomType][roomId].guesses[playerIndex].push({
-							number: guess,
-							...guessScore,
-						});
+						if (playerLeft) {
+							for (let i = 0; i < room.players.length; ++i) {
+								/* if a player has left, mark all room players as not in the room */
+								if (socketUsers[room.players[i].socketId])
+									socketUsers[
+										room.players[i].socketId
+									].inARoom = false;
+								/* announce the other player as winner if there is one */
+								if (
+									room.players[i].user._id.toString() ===
+									socketUsers[socket.id]?.user._id.toString()
+								) {
+									const winner =
+										room.players[i === 0 ? 1 : 0];
+									rooms[roomType][room.id].winner = winner;
+									/* update stats if not updated already */
+									if (
+										!room.gameOver &&
+										room.playerCount === 2 &&
+										winner
+									)
+										await updateStats(
+											room,
+											winner.user._id
+										);
+									/* the same function may run for multiple users
+									so it is important to make these checks
+								 */
+								}
+							}
+							/* room ends */
+							rooms[roomType][room.id].gameOver = true;
+							/* send data to all players and viewers */
+							for (let i = 0; i < room.players.length; ++i) {
+								const user = await getUser(
+									room.players[i].user._id
+								);
+								io.to(room.players[i].socketId).emit(
+									"room-data",
+									{
+										...rooms[roomType][room.id],
+										user,
+									}
+								);
+							}
+							for (let viewer of room.viewers) {
+								const user = await getUser(viewer.user._id);
+								/* mark the viewers as not in a room too */
+								socketUsers[viewer.socketId].inARoom = false;
+								io.to(viewer.socketId).emit("room-data", {
+									...rooms[roomType][room.id],
+									viewer: true,
+									user,
+								});
+							}
+							io.emit("room-list", rooms);
+							socketUsers[socket.id] = null;
+							delete rooms[roomType][room.id];
+							/* at the end, delete the room and socket entry */
+							return;
+						}
+						/* if the disconnected user is not a player
+							below part will run
+					 	*/
+						for (let viewer of room.viewers) {
+							/* finding which viewer has left */
+							if (
+								viewer.user._id ===
+								socketUsers[socket.id].user._id
+							) {
+								/* deleting socket entry */
+								socketUsers[socket.id] = null;
+								/* removing viewer from viewers list */
+								rooms[roomType][room.id].viewers = rooms[
+									roomType
+								][room.id].viewers.filter(
+									(_viewer) =>
+										_viewer.user._id !== viewer.user._id
+								);
+								/* sending the room data back */
+								for (let i = 0; i < room.players.length; ++i) {
+									io.to(room.players[i].socketId).emit(
+										"room-data",
+										rooms[roomType][room.id]
+									);
+								}
+								for (let _viewer of room.viewers) {
+									socketUsers[
+										_viewer.socketid
+									].inARoom = false;
+									io.to(_viewer.socketId).emit("room-data", {
+										...rooms[roomType][room.id],
+										viewer: true,
+									});
+								}
+								return;
+							}
+						}
 					}
 				}
-				for (let i = 0; i < room.playerCount; ++i) {
-					let user;
-					if(rooms[roomType][roomId].gameOver) 
-						user = await getUser(room.players[i].user._id);
-					io.to(room.players[i].socketId).emit("room-data", {
-						...rooms[roomType][roomId],
-						numbers: null,
-						number: room.numbers[i],
-						user
-					});
-				}
+			} catch (err) {
+				logErrorMessage("disconnect", err);
 			}
 		});
 
-		socket.on("leave-room", async ({ roomType, roomId }) => {
-			if (!roomType || !roomId) return;
-			const room = rooms[roomType][roomId];
-			if (room) {
-				for (let player of room.players) {
-					socketUsers[player.socketId].inARoom = false;
-					if (socketUsers[socket.id].user._id !== player.user._id) {
-						rooms[roomType][roomId].winner = player;
-						await updateStats(room, player.user._id);
-					}
-				}
-				rooms[roomType][roomId].gameOver = true;
-				for (let i = 0; i < room.players.length; ++i) {
-					let user = await getUser(room.players[i].user._id);
-					io.to(room.players[i].socketId).emit("room-data", {
-						...rooms[roomType][roomId],
-						number: room.numbers[i],
-						user,
-					});
-				}
-				io.emit('room-list', rooms);
-			}
-		});
+		socket.on("global-message", (text) =>
+			sendGlobalMessage(io, socket, socketUsers, { text })
+		);
 
-		socket.on("disconnect", () => {
-			for (let roomType of roomTypes) {
-				for (let room of Object.values(rooms[roomType])) {
-					if (
-						room.owner?.user._id ===
-						socketUsers[socket.id]?.user._id ||
-						room.gameOver
-					)
-						delete rooms[room];
-				}
-			}
-			socketUsers[socket.id] = null;
+		socket.on("create-room", (roomType) =>
+			createRoom(io, socket, socketUsers, rooms, { roomType })
+		);
+		socket.on("join-room", (body) =>
+			joinRoom(io, socket, socketUsers, rooms, body)
+		);
+		socket.on("view-room", (body) => {
+			viewRoom(io, socket, socketUsers, rooms, body);
 		});
+		socket.on("leave-room", (body) =>
+			leaveRoom(io, socket, socketUsers, rooms, body)
+		);
+
+		socket.on("get-rooms", () => getRooms(io, socket, socketUsers, rooms));
+
+		socket.on("set-number", (body) =>
+			setNumber(io, socket, socketUsers, rooms, body)
+		);
+		socket.on("make-guess", (body) =>
+			makeGuess(io, socket, socketUsers, rooms, body)
+		);
 	});
 };
 
